@@ -3,26 +3,25 @@ const cursos = document.getElementById('lista-cursos');
 const listaCarrito = document.querySelector('#lista-carrito tbody');
 const carrito = document.querySelector('#carrito');
 const vaciar_carrito = document.querySelector('#vaciar-carrito');
-
 class Operations {
-    constructor(items){
+    constructor(items) {
         this.items = items;
     }
-    add(item){}
-    delete(item){}
-    readAll(){return this.items;}
-    deleteAll(){
-        this.items = []; 
-        return this.items
+    add(item) { }
+    delete(item) { }
+    readAll() { return this.items; }
+    deleteAll() {
+        this.items = [];
+        return this.items;
     }
 }
 
-class CursoDOMOperations extends Operations{
-    constructor(listaCarrito){
+class CursoDOMOperations extends Operations {
+    constructor(listaCarrito) {
         super(listaCarrito);
     }
 
-    add(item){
+    add(item) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
@@ -41,71 +40,71 @@ class CursoDOMOperations extends Operations{
         this.items.appendChild(row);
     }
 
-    delete(item){
+    delete(item) {
         item.remove();
     }
 
-    deleteAll(){
-        while(this.items.firstChild){
+    deleteAll() {
+        while (this.items.firstChild) {
             this.items.firstChild.remove();
         }
     }
 }
 
-class CursoLocalStorageOperations extends Operations{
-    constructor(listaCarrito){
+class CursoLocalStorageOperations extends Operations {
+    constructor(listaCarrito) {
         super(listaCarrito);
     }
 
-    add(item){
+    add(item) {
         const cursos = this.readAll();
         cursos.push(item);
         localStorage.setItem('cursos', JSON.stringify(cursos));
     }
 
-    delete(curso){
+    delete(curso) {
         const id = curso.querySelector('a').getAttribute('data-id');
         const cursos = this.readAll();
         const newCursos = cursos.filter(curso => curso.id != id);
         localStorage.setItem('cursos', JSON.stringify(newCursos));
     }
 
-    readAll(){
+    readAll() {
         this.items = [];
 
         if (localStorage.getItem('cursos') === null) {
             this.items = [];
-        } else {
-            this.items = JSON.parse(localStorage.getItem('cursos'))
+        }
+        else {
+            this.items = JSON.parse(localStorage.getItem('cursos'));
         }
 
         return this.items;
     }
 
-    deleteAll(){
+    deleteAll() {
         let cursos = this.readAll();
         cursos = [];
         localStorage.setItem('cursos', JSON.stringify(cursos));
     }
 }
 
-class CRUD{
+class WriterList extends Operations {
+    getWriters() { }
 
-    getWriters(){}
-
-    add(item){
+    add(item) {
         this.writers = this.getWriters();
         for (const writer of this.writers) {
             writer.add(item);
         }
     }
-    delete(item){
+    delete(item) {
         this.writers = this.getWriters();
         for (const writer of this.writers) {
             writer.delete(item);
         }
     }
-    deleteAll(){
+    deleteAll() {
         this.writers = this.getWriters();
         for (const writer of this.writers) {
             writer.deleteAll();
@@ -113,24 +112,25 @@ class CRUD{
     }
 }
 
-class LocalStorageAndDOM extends CRUD{
-    getWriters(){
+
+class LocalStorageAndDOMWriters extends WriterList {
+    getWriters() {
         return [
             new CursoDOMOperations(listaCarrito),
             new CursoLocalStorageOperations(obtenerLocalStorage())
-        ]
+        ];
     }
 }
 
 const cursoDOMOperations = new CursoDOMOperations(listaCarrito);
 // const cursoLocalStorageOperations = new CursoLocalStorageOperations(obtenerLocalStorage());
-const writerLocalStorageAndDOM = new LocalStorageAndDOM();
+const writerLocalStorageAndDOM = new LocalStorageAndDOMWriters();
 
 
 //Listeners
 cargarListeners();
 
-function cargarListeners(){
+function cargarListeners() {
     cursos.addEventListener('click', comprarCurso);
     carrito.addEventListener('click', eliminarCurso);
     vaciar_carrito.addEventListener('click', vaciarCarrito);
@@ -139,10 +139,10 @@ function cargarListeners(){
 
 //Funciones
 
-function comprarCurso(e){
+function comprarCurso(e) {
     e.preventDefault();
 
-    if(e.target.classList.contains('agregar-carrito')){
+    if (e.target.classList.contains('agregar-carrito')) {
         curso = e.target.parentElement.parentElement;
         leerDatosCurso(curso);
     }
@@ -154,7 +154,7 @@ function leerDatosCurso(curso) {
         titulo: curso.querySelector('h4').textContent,
         precio: curso.querySelector('.precio span').innerText,
         id: curso.querySelector('a').getAttribute('data-id')
-    }    
+    }
 
     insertarCarrito(infoCurso);
 }
@@ -165,11 +165,11 @@ function insertarCarrito(curso) {
     writerLocalStorageAndDOM.add(curso);
 }
 
-function eliminarCurso(e){
+function eliminarCurso(e) {
     e.preventDefault();
 
-    if(e.target.classList.contains('borrar-curso')){
-        const curso  = e.target.parentElement.parentElement;
+    if (e.target.classList.contains('borrar-curso')) {
+        const curso = e.target.parentElement.parentElement;
         // cursoDOMOperations.delete(curso);
         // cursoLocalStorageOperations.delete(curso);
 
@@ -178,12 +178,12 @@ function eliminarCurso(e){
 
 }
 
-function vaciarCarrito(e){
+function vaciarCarrito(e) {
     e.preventDefault();
     // cursoDOMOperations.deleteAll();
     // cursoLocalStorageOperations.deleteAll();
 
-    writerLocalStorageAndDOM.deleteAll(curso);
+    writerLocalStorageAndDOM.deleteAll();
 }
 
 function cargarCursosLocalStorage() {
@@ -193,7 +193,7 @@ function cargarCursosLocalStorage() {
     }
 }
 
-function obtenerLocalStorage(){
+function obtenerLocalStorage() {
     let cursos = [];
 
     if (localStorage.getItem('cursos') === null) {
